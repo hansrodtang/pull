@@ -29,10 +29,3 @@ func Data(req *github.PullRequest) (user string, repository string, number int) 
 	number = *req.Number
 	return
 }
-
-type logger struct{}
-
-func (l logger) Write(p []byte) (n int, err error) {
-	fmt.Print("Log: ")
-	return fmt.Fprintln(os.Stdout, string(p))
-}
