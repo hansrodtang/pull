@@ -32,28 +32,7 @@ func New(c Configuration) *Handler {
 }
 
 func (l *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	pingHandler(implementsHandler(secretHandler(l.Secret,
-		http.HandlerFunc(
-			func(w http.ResponseWriter, req *http.Request) {
-
-				decoder := json.NewDecoder(req.Body)
-				var event github.PullRequestEvent
-				err := decoder.Decode(&event)
-
-				if err != nil {
-					w.WriteHeader(http.StatusBadRequest)
-					fmt.Fprintf(w, "Bad JSON")
-					return
-				}
-				fmt.Printf("%s %s:%d\n", *event.Action, *event.Repo.FullName, *event.Number)
-
-				//pending(l.Client, event.PullRequest)
-				go func() {
-					for _, m := range l.Middlewares[*event.Action] {
-						m(l.Client, event.PullRequest)
-					}
-				}()
-			})))).ServeHTTP(w, req)
+	pingHandler(implementsHandler(secretHandler(l.Secret, mainHandler(l, runner)))).ServeHTTP(w, req)
 }
 
 func pending(client *github.Client, event *github.PullRequest) {
@@ -68,6 +47,36 @@ func pending(client *github.Client, event *github.PullRequest) {
 
 		client.Repositories.CreateStatus(user, repo, *c.SHA, status)
 	}
+}
+
+type runnerFunc func(*Handler, github.PullRequestEvent)
+
+func runner(handler *Handler, event github.PullRequestEvent) {
+	for _, m := range handler.Middlewares[*event.Action] {
+		m(handler.Client, event.PullRequest)
+	}
+}
+
+func mainHandler(handler *Handler, run runnerFunc) http.Handler {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, req *http.Request) {
+
+			decoder := json.NewDecoder(req.Body)
+			var event github.PullRequestEvent
+			err := decoder.Decode(&event)
+
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintf(w, "Bad JSON")
+				return
+			}
+			fmt.Printf("%s %s:%d\n", *event.Action, *event.Repo.FullName, *event.Number)
+
+			w.WriteHeader(http.StatusAccepted)
+
+			//pending(l.Client, event.PullRequest)
+			go run(handler, event)
+		})
 }
 
 func pingHandler(next http.Handler) http.Handler {
