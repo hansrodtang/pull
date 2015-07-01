@@ -35,28 +35,6 @@ func (l *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	pingHandler(implementsHandler(secretHandler(l.Secret, mainHandler(l, runner)))).ServeHTTP(w, req)
 }
 
-func pending(client *github.Client, event *github.PullRequest) {
-	user, repo, number := Data(event)
-
-	commits, _, _ := client.PullRequests.ListCommits(user, repo, number, nil)
-	for _, c := range commits {
-		status := &github.RepoStatus{
-			State:       github.String("pending"),
-			Description: github.String("Running tests."),
-		}
-
-		client.Repositories.CreateStatus(user, repo, *c.SHA, status)
-	}
-}
-
-type runnerFunc func(*Handler, github.PullRequestEvent)
-
-func runner(handler *Handler, event github.PullRequestEvent) {
-	for _, m := range handler.Middlewares[*event.Action] {
-		m(handler.Client, event.PullRequest)
-	}
-}
-
 func mainHandler(handler *Handler, run runnerFunc) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, req *http.Request) {
