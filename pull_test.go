@@ -2,11 +2,14 @@ package pull
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/google/go-github/github"
 )
 
 func TestPing(t *testing.T) {
@@ -144,6 +147,62 @@ func TestSecretFailed(t *testing.T) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	actual := string(body)
 	expected := "HMAC verification failed"
+
+	if actual != expected {
+		t.Errorf("Expected %s got %s", expected, actual)
+	}
+}
+
+func TestMain(t *testing.T) {
+	pullrequest := github.PullRequestEvent{
+		Action: github.String("opened"),
+		Number: github.Int(0),
+		Repo: &github.Repository{
+			FullName: github.String("test"),
+		},
+	}
+	reqbody, _ := json.Marshal(pullrequest)
+
+	handler := New(Configuration{})
+	runner := func(handler *Handler, event github.PullRequestEvent) {}
+
+	ts := httptest.NewServer(mainHandler(handler, runner))
+	defer ts.Close()
+
+	req, _ := http.NewRequest("GET", ts.URL, bytes.NewBuffer(reqbody))
+	resp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		t.Fatalf("HTTP Request failed: %s", err)
+	}
+
+	if resp.StatusCode != http.StatusAccepted {
+		t.Errorf("Expected HTTP %d, got HTTP %d", http.StatusAccepted, resp.StatusCode)
+	}
+}
+
+func TestMainBadJSON(t *testing.T) {
+	handler := New(Configuration{})
+
+	runner := func(handler *Handler, event github.PullRequestEvent) {}
+
+	ts := httptest.NewServer(mainHandler(handler, runner))
+	defer ts.Close()
+
+	req, _ := http.NewRequest("GET", ts.URL, bytes.NewBuffer([]byte{0}))
+	resp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		t.Fatalf("HTTP Request failed: %s", err)
+	}
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("Expected HTTP %d, got HTTP %d", http.StatusBadRequest, resp.StatusCode)
+	}
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	actual := string(body)
+	expected := "Bad JSON"
 
 	if actual != expected {
 		t.Errorf("Expected %s got %s", expected, actual)
