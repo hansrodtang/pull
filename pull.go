@@ -96,7 +96,6 @@ func implementsHandler(next http.Handler) http.Handler {
 
 func secretHandler(secret string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-
 		if secret != "" {
 			s := req.Header.Get("X-Hub-Signature")
 
