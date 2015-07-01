@@ -14,10 +14,9 @@ func TestPing(t *testing.T) {
 	ts := httptest.NewServer(pingHandler(http.NotFoundHandler()))
 	defer ts.Close()
 
-	client := &http.Client{}
 	req, _ := http.NewRequest("GET", ts.URL, nil)
 	req.Header.Set("X-GitHub-Event", "ping")
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
 		t.Fatalf("HTTP Request failed: %s", err)
@@ -41,10 +40,9 @@ func TestImplements(t *testing.T) {
 	ts := httptest.NewServer(implementsHandler(http.NotFoundHandler()))
 	defer ts.Close()
 
-	client := &http.Client{}
 	req, _ := http.NewRequest("GET", ts.URL, nil)
 	req.Header.Set("X-GitHub-Event", "unsupported")
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
 		t.Fatalf("HTTP Request failed: %s", err)
@@ -77,11 +75,9 @@ func TestSecret(t *testing.T) {
 		})))
 	defer ts.Close()
 
-	client := &http.Client{}
-
 	req, _ := http.NewRequest("GET", ts.URL, bytes.NewBuffer(reqbody))
 	req.Header.Set("X-Hub-Signature", hash)
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
 		t.Fatalf("HTTP Request failed: %s", err)
@@ -104,10 +100,8 @@ func TestSecretNoHeader(t *testing.T) {
 	ts := httptest.NewServer(secretHandler("secret", http.NotFoundHandler()))
 	defer ts.Close()
 
-	client := &http.Client{}
-
 	req, _ := http.NewRequest("GET", ts.URL, nil)
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
 		t.Fatalf("HTTP Request failed: %s", err)
@@ -135,11 +129,9 @@ func TestSecretFailed(t *testing.T) {
 	ts := httptest.NewServer(secretHandler(secret, http.NotFoundHandler()))
 	defer ts.Close()
 
-	client := &http.Client{}
-
 	req, _ := http.NewRequest("GET", ts.URL, bytes.NewBuffer(reqbody))
 	req.Header.Set("X-Hub-Signature", hash)
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
 		t.Fatalf("HTTP Request failed: %s", err)
