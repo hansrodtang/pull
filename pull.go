@@ -35,11 +35,10 @@ func (l *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	pingHandler(implementsHandler(secretHandler(l.Secret,
 		http.HandlerFunc(
 			func(w http.ResponseWriter, req *http.Request) {
-				body, _ := ioutil.ReadAll(req.Body)
 
+				decoder := json.NewDecoder(req.Body)
 				var event github.PullRequestEvent
-				err := json.Unmarshal(body, &event)
-				//err := decoder.Decode(&event)
+				err := decoder.Decode(&event)
 
 				if err != nil {
 					w.WriteHeader(http.StatusBadRequest)
