@@ -101,15 +101,12 @@ func TestSecret(t *testing.T) {
 
 func TestSecretNoHeader(t *testing.T) {
 
-	expected := "X-Hub-Signature required for HMAC verification"
-
 	ts := httptest.NewServer(secretHandler("secret", http.NotFoundHandler()))
 	defer ts.Close()
 
 	client := &http.Client{}
 
 	req, _ := http.NewRequest("GET", ts.URL, nil)
-	//req.Header.Set("X-Hub-Signature", hash)
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -122,6 +119,7 @@ func TestSecretNoHeader(t *testing.T) {
 
 	body, _ := ioutil.ReadAll(resp.Body)
 	actual := string(body)
+	expected := "X-Hub-Signature required for HMAC verification"
 
 	if actual != expected {
 		t.Errorf("Expected %s got %s", expected, actual)
