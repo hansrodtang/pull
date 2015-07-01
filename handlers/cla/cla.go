@@ -5,9 +5,9 @@ import (
 	"github.com/hansrodtang/pull"
 )
 
-type CheckerFunc func(username, email string) bool
+type CLAFunc func(username, email string) bool
 
-func New(signed CheckerFunc) pull.Middleware {
+func New(signed CLAFunc) pull.Middleware {
 	return func(client *github.Client, event *github.PullRequest) {
 		user, repo, number := pull.Data(event)
 
