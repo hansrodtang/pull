@@ -20,10 +20,11 @@ func New(match string) pull.Middleware {
 		}
 
 		var message *github.RepoStatus
+		url := "http://keepachangelog.com/"
 		if found {
-			message = pull.Success("", "ChangeLog Kept", "changelog")
+			message = pull.Success(url, "ChangeLog Kept", "changelog")
 		} else {
-			message = pull.Failure("", "Keep a ChangeLog", "changelog")
+			message = pull.Failure(url, "Keep a ChangeLog", "changelog")
 		}
 
 		for _, c := range commits {
