@@ -70,10 +70,11 @@ func TestSecret(t *testing.T) {
 	hash := "sha1=7c7429c26f63ae28d74597e825c20e1796c167e3"
 
 	expected := "Success"
-	ts := httptest.NewServer(secretHandler(secret, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusTeapot)
-		fmt.Fprint(w, expected)
-	})))
+	ts := httptest.NewServer(secretHandler(secret, http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusTeapot)
+			fmt.Fprint(w, expected)
+		})))
 	defer ts.Close()
 
 	client := &http.Client{}
