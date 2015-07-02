@@ -5,6 +5,23 @@ A pull request checker library for [Go](http://golang.org).
 
 **:heavy_exclamation_mark: Still in heavy development. Not everything in this document is accurate. Please wait for the 0.1 release :heavy_exclamation_mark:**
 
+## Example
+
+```go
+handler := pull.New(
+    pull.Configuration{
+        Middlewares: pull.Middlewares{
+            "reopened": []pull.Middleware{
+                signed.Signed,
+                changelog.New("CHANGELOG.md")},
+            "opened": []pull.Middleware{
+                deny.New("We do not accept pull requests!")}},
+    })
+
+http.Handle("/webhook", handler)
+log.Fatal(http.ListenAndServe(":8080", nil))
+```
+
 ## Installation
 Install with `go get`
 
