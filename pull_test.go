@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
+// Test handling of ping events.
 func TestPing(t *testing.T) {
 
 	ts := httptest.NewServer(pingHandler(http.NotFoundHandler()))
@@ -38,6 +39,7 @@ func TestPing(t *testing.T) {
 	}
 }
 
+// Test rejection of unsupported events.
 func TestImplements(t *testing.T) {
 
 	ts := httptest.NewServer(implementsHandler(http.NotFoundHandler()))
@@ -64,6 +66,7 @@ func TestImplements(t *testing.T) {
 	}
 }
 
+// Test handling of HMAC hashes with correct input.
 func TestSecret(t *testing.T) {
 
 	secret := "test"
@@ -98,6 +101,7 @@ func TestSecret(t *testing.T) {
 	}
 }
 
+// Test rejection of no HMAC hash when one is expected.
 func TestSecretNoHeader(t *testing.T) {
 
 	ts := httptest.NewServer(secretHandler("secret", http.NotFoundHandler()))
@@ -123,6 +127,7 @@ func TestSecretNoHeader(t *testing.T) {
 	}
 }
 
+// Test rejection of incorrect HMAC hash.
 func TestSecretFailed(t *testing.T) {
 
 	secret := "test"
@@ -153,6 +158,7 @@ func TestSecretFailed(t *testing.T) {
 	}
 }
 
+// Test handler with correct input.
 func TestMain(t *testing.T) {
 	pullrequest := github.PullRequestEvent{
 		Action: github.String("opened"),
@@ -181,6 +187,7 @@ func TestMain(t *testing.T) {
 	}
 }
 
+// Test rejection of malformed JSON
 func TestMainBadJSON(t *testing.T) {
 	handler := New(Configuration{})
 
