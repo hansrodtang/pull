@@ -11,10 +11,10 @@ A pull request checker library for [Go](http://golang.org).
 handler := pull.New(
     pull.Configuration{
         Middlewares: pull.Middlewares{
-            "reopened": []pull.Middleware{
+            "reopened": {
                 signed.Signed,
                 changelog.New("CHANGELOG.md")},
-            "opened": []pull.Middleware{
+            "opened": {
                 deny.New("We do not accept pull requests!")}},
     })
 
