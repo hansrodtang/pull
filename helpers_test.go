@@ -14,17 +14,13 @@ import (
 
 // Simple test to see if middlewares are run.
 func TestRunner(t *testing.T) {
-
 	expected := "test"
 
 	mw := func(client *github.Client, event *github.PullRequest) {
 		client.UserAgent = expected
 	}
 
-	handler := New(
-		Configuration{
-			Middlewares: Middlewares{
-				"opened": []Middleware{mw}}})
+	handler := New(Configuration{Middlewares: Middlewares{"opened": {mw}}})
 
 	event := github.PullRequestEvent{
 		Action: github.String("opened"),
@@ -33,14 +29,12 @@ func TestRunner(t *testing.T) {
 	runner(handler, event)
 
 	actual := handler.Client.UserAgent
-
 	if actual != expected {
 		t.Errorf("Expected %s, got %s", expected, actual)
 	}
 }
 
 func TestRepoStatus(t *testing.T) {
-
 	expected := &github.RepoStatus{
 		State:       github.String("failure"),
 		TargetURL:   github.String("example.com"),
